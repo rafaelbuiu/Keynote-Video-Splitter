@@ -12,6 +12,7 @@
     "canvas": "^2.6.1",
     "ffmetadata": "^1.6.0",
     "fs-extra": "^8.1.0",
+    "images-to-pdf": "^1.0.3",
     "jimp": "^0.9.3",
     "looks-same": "^7.2.2",
     "move-file": "^1.2.0"

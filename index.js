@@ -2,18 +2,21 @@ const fs = require("fs-extra");
 const util = require("util");
 const looksSame = require("looks-same");
 const moveFile = require("move-file");
+const imagesToPdf = require("images-to-pdf")
 
 const exec = util.promisify(require("child_process").exec);
 
 const debug = false;
 const videoEncoder = "h264"; // mpeg4 libvpx
-const input = "mantrac2.mp4";
+const input = "mantrac.mp4";
 const output = "output.mp4";
 
 let lastCheck = false;
 let lastImage;
 let totalImages = 0;
 let checkCount = 0;
+let imagesPdf = [];
+let framesData = {};
 
 (async function() {
   try {
@@ -44,7 +47,12 @@ let checkCount = 0;
 })();
 
 async function checkImage(image) {
-  if (image > totalImages) return;
+  if (image > totalImages) {
+    await imagesToPdf(imagesPdf, "temp/combined.pdf");
+    await fs.remove("temp/raw-frames");
+    await fs.writeFile('temp/frameData.json', JSON.stringify(framesData));
+    return;
+  }
 
   lastImage = image - 1;
   var imageLast = `temp/raw-frames/${lastImage}.png`;
@@ -72,7 +80,10 @@ async function checkImage(image) {
         if (checkCount == 59) {
           checkCount = 0;
           var newPath = imageLast.replace("raw", "edited");
+          var seconds = (lastImage / 30);
+          framesData[lastImage] = seconds;
           moveFile(imageLast, newPath);
+          imagesPdf.push(newPath)
         }
       } else {
         checkCount = 0;
